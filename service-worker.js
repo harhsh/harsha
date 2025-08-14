@@ -1,29 +1,19 @@
-const CACHE_NAME = 'harsh-online-cache-v1';
-const ASSETS = [
-  './',
-  './index.html',
-  './manifest.json'
-];
-
-self.addEventListener('install', event => {
-  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS)));
-  self.skipWaiting();
-});
-
-self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys().then(keys => Promise.all(keys.map(k => k !== CACHE_NAME && caches.delete(k))))
+self.addEventListener('install', e => {
+  e.waitUntil(
+    caches.open('harsha-store').then(cache => {
+      return cache.addAll([
+        '/',
+        '/index.html',
+        '/manifest.json'
+      ]);
+    })
   );
-  self.clients.claim();
 });
 
-self.addEventListener('fetch', event => {
-  const req = event.request;
-  event.respondWith(
-    caches.match(req).then(cached => cached || fetch(req).then(res => {
-      const copy = res.clone();
-      caches.open(CACHE_NAME).then(cache => cache.put(req, copy));
-      return res;
-    }).catch(() => cached))
+self.addEventListener('fetch', e => {
+  e.respondWith(
+    caches.match(e.request).then(response => {
+      return response || fetch(e.request);
+    })
   );
 });
